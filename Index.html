@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Horarios - UNIUM</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #e8f1fb 0%, #f5f9ff 100%); color: #1a2332; }
+    .container { display: flex; min-height: 100vh; }
+    .sidebar { width: 200px; background: linear-gradient(180deg, #0a1929 0%, #081623 100%); color: white; padding: 24px 16px; display: flex; flex-direction: column; gap: 20px; }
+    .brand { text-align: center; margin-bottom: 10px; }
+    .brand-logo { font-size: 24px; font-weight: 900; background: linear-gradient(135deg, #00d4ff 0%, #ff006e 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .brand-text { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 6px; line-height: 1.4; }
+    .menu { display: flex; flex-direction: column; gap: 8px; }
+    .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; background: transparent; border: none; color: rgba(255,255,255,0.8); cursor: pointer; font-size: 14px; }
+    .menu-item.active { background: linear-gradient(135deg, #0b5cff 0%, #0a4dd9 100%); color: white; }
+    .menu-item.active::after { content: '›'; position: absolute; right: 10px; font-size: 18px; }
+    .menu-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 8px 0; }
+    .menu-footer { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+    .menu-btn { padding: 10px 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .main { flex: 1; padding: 24px; overflow-y: auto; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; gap: 16px; }
+    .logo-partner { display: flex; align-items: center; gap: 12px; }
+    .logo-circle { width: 60px; height: 60px; border-radius: 50%; background: white; border: 3px solid #0b5cff; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 10px; color: #0b5cff; }
+    .logo-text { display: flex; flex-direction: column; gap: 2px; }
+    .logo-text-main { font-weight: 900; font-size: 14px; color: #ff4d4f; }
+    .logo-text-sub { font-size: 11px; color: #ff4d4f; font-weight: 700; }
+    .widgets { display: flex; gap: 12px; align-items: center; }
+    .widget { background: white; padding: 12px 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; min-width: 110px; }
+    .widget-label { font-size: 10px; color: #0b5cff; font-weight: 700; text-transform: uppercase; }
+    .widget-value { font-size: 16px; font-weight: 800; color: #1a2332; margin-top: 4px; }
+    .widget-icon { flex-direction: row !important; min-width: auto; padding: 8px 12px; gap: 12px; }
+    .toggle-switch { width: 50px; height: 28px; background: #17c964; border-radius: 14px; position: relative; }
+    .toggle-switch::after { content: ''; position: absolute; width: 24px; height: 24px; background: white; border-radius: 50%; top: 2px; right: 2px; }
+    .notification-badge { width: 28px; height: 28px; background: #ff4d4f; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 12px; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0a1929 0%, #081623 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .title-section { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .title-line { width: 6px; height: 32px; background: linear-gradient(180deg, #ff4d4f 0%, #ff7a7a 100%); border-radius: 3px; }
+    .title-text { font-size: 24px; font-weight: 800; }
+    .card { background: white; border-radius: 16px; box-shadow: 0 4px 16px rgba(11,92,255,0.08); padding: 20px; margin-bottom: 24px; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table thead { background: #f9fafc; border-bottom: 2px solid #e8ecf1; }
+    .table th { padding: 14px 12px; text-align: left; font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; }
+    .table tbody tr { border-bottom: 1px solid #f0f2f5; }
+    .table td { padding: 16px 12px; vertical-align: middle; font-size: 14px; }
+    .planta-tag { display: inline-block; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 12px; min-width: 64px; text-align: center; }
+    .planta-hall { background: #bddcff; color: #0b5cff; }
+    .planta-p1 { background: #f0e6ff; color: #7c3aed; }
+    .planta-p2 { background: #ffd9b3; color: #d97706; }
+    .planta-p3 { background: #c7eae5; color: #059669; }
+    .planta-p4 { background: #dbeafe; color: #0284c7; }
+    .planta-az { background: #e0f2fe; color: #0369a1; }
+    .sala-cell { display: flex; gap: 12px; align-items: center; }
+    .sala-thumb { width: 60px; height: 48px; border-radius: 10px; background: linear-gradient(135deg, #f0f4ff 0%, #e8f1ff 100%); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .sala-info h4 { font-size: 14px; font-weight: 700; color: #1a2332; margin-bottom: 2px; }
+    .sala-info p { font-size: 12px; color: #0b5cff; margin: 0; }
+    .auxiliar-cell { display: flex; gap: 10px; align-items: center; }
+    .aux-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 12px; }
+    .aux-avatar.blue { background: linear-gradient(135deg, #0b5cff 0%, #0a4dd9 100%); }
+    .aux-avatar.red { background: linear-gradient(135deg, #ff4d4f 0%, #ff7a7a 100%); }
+    .aux-name { font-size: 13px; font-weight: 600; color: #1a2332; }
+    .hora { font-weight: 700; font-size: 14px; text-align: center; min-width: 70px; }
+    .hora.blue { color: #0b5cff; }
+    .hora.red { color: #ff4d4f; }
+    .estado { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #17c964; font-weight: 600; }
+    .estado-dot { width: 8px; height: 8px; border-radius: 50%; background: #17c964; }
+    .cards-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .stat-card { background: linear-gradient(135deg, #ffffff 0%, #f9fafc 100%); border-radius: 14px; padding: 20px; box-shadow: 0 2px 12px rgba(11,92,255,0.06); text-align: center; border: 1px solid rgba(11,92,255,0.08); }
+    .stat-icon { font-size: 28px; margin-bottom: 8px; }
+    .stat-title { font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-bottom: 8px; }
+    .stat-value { font-size: 32px; font-weight: 900; margin-bottom: 4px; }
+    .stat-value.blue { color: #0b5cff; }
+    .stat-value.red { color: #ff4d4f; }
+    .stat-sub { font-size: 12px; color: #6b7280; margin-bottom: 10px; }
+    .stat-link { font-size: 12px; font-weight: 700; color: #0b5cff; cursor: pointer; }
+    .stat-card:nth-child(2) .stat-value { color: #0b5cff; }
+    .stat-card:nth-child(3) .stat-value { color: #ff4d4f; }
+    @media (max-width: 768px) { .container { flex-direction: column; } .sidebar { width: 100%; } .cards-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">UNIUM</div>
+        <div class="brand-text">SERVICIOS<br>AUXILIARES<br>S.L.</div>
+      </div>
+      <nav class="menu">
+        <button class="menu-item active">🏠 Inicio</button>
+        <button class="menu-item">🏛️ Hall</button>
+        <button class="menu-item">🏢 Planta 1</button>
+        <button class="menu-item">🏢 Planta 2</button>
+        <button class="menu-item">🏢 Planta 3</button>
+        <button class="menu-item">🏢 Planta 4</button>
+        <button class="menu-item">🏢 Planta 5</button>
+        <button class="menu-item">🏢 Planta 5B</button>
+        <button class="menu-item">🏢 Planta 6</button>
+        <button class="menu-item">🌳 Azotea</button>
+      </nav>
+      <div class="menu-divider"></div>
+      <div class="menu-footer">
+        <button class="menu-btn">📅 Cuadrante</button>
+        <button class="menu-btn">👥 Equipo</button>
+        <button class="menu-btn">📥 Exportar</button>
+      </div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="logo-partner">
+          <div class="logo-circle">CBA</div>
+          <div class="logo-text">
+            <div class="logo-text-main">CÍRCULO</div>
+            <div class="logo-text-sub">DE BELLAS ARTES<br>CASAEUROPA</div>
+          </div>
+        </div>
+        <div class="widgets">
+          <div class="widget">
+            <div class="widget-label">VIERNES</div>
+            <div class="widget-value" id="dateWidget">24 MAY 2024</div>
+          </div>
+          <div class="widget">
+            <div class="widget-label">CBA</div>
+            <div class="widget-value" id="clockWidget" style="font-size: 20px;">00:00:00</div>
+          </div>
+          <div class="widget widget-icon">
+            <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #17c964; font-weight: 600;">● ACTIVO</span>
+            <div class="toggle-switch"></div>
+          </div>
+          <div class="widget widget-icon">
+            <div class="notification-badge">2</div>
+            <div class="avatar">AD</div>
+          </div>
+        </div>
+      </div>
+      <div class="title-section">
+        <div class="title-line"></div>
+        <h1 class="title-text">SERVICIOS EN CURSO</h1>
+      </div>
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>PLANTA</th>
+              <th>SALA / ESPACIO</th>
+              <th>AUXILIAR</th>
+              <th>HORA INICIO</th>
+              <th>HORA FIN</th>
+              <th>ESTADO</th>
+            </tr>
+          </thead>
+          <tbody id="servicesTable"></tbody>
+        </table>
+      </div>
+      <div class="cards-row">
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-title">SERVICIOS EN CURSO</div>
+          <div class="stat-value blue" id="statServices">0</div>
+          <div class="stat-sub">en este momento</div>
+          <div class="stat-link">Ver detalle →</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-title">AUXILIARES EN SERVICIO</div>
+          <div class="stat-value" id="statAuxiliares">0</div>
+          <div class="stat-sub">activos</div>
+          <div class="stat-link">Ver equipo →</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⏰</div>
+          <div class="stat-title">PRÓXIMO CAMBIO</div>
+          <div class="stat-value red" id="nextTime">--:--</div>
+          <div class="stat-sub" id="nextSala">Próximo servicio comienza en --</div>
+          <div class="stat-link">Ver cuadrante →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const services = [
+      { planta: 'HALL', sala: 'Vestíbulo Principal', sub: 'Acceso general', aux: 'María López Rodríguez', hi: '09:00', hf: '14:00', plantaClass: 'hall', auxColor: 'blue', horaColor: 'blue', thumb: '🏛️' },
+      { planta: 'P1', sala: 'Sala Ramón Gómez de la Serna', sub: 'Exposición', aux: 'Carlos Martín Fernández', hi: '10:00', hf: '18:00', plantaClass: 'p1', auxColor: 'red', horaColor: 'red', thumb: '🎬' },
+      { planta: 'P1', sala: 'Sala Minerva', sub: 'Reunión', aux: 'Ana Belén Torres', hi: '11:00', hf: '15:00', plantaClass: 'p1', auxColor: 'blue', horaColor: 'blue', thumb: '🗽' },
+      { planta: 'P2', sala: 'Sala Picasso', sub: 'Exposición', aux: 'Javier Ruiz Sánchez', hi: '09:30', hf: '17:30', plantaClass: 'p2', auxColor: 'red', horaColor: 'red', thumb: '🎨' },
+      { planta: 'P3', sala: 'Sala Valle-Inclán', sub: 'Taller', aux: 'Lucía Fernández Martín', hi: '10:30', hf: '13:30', plantaClass: 'p3', auxColor: 'blue', horaColor: 'blue', thumb: '📚' },
+      { planta: 'P4', sala: 'Sala María Zambrano', sub: 'Conferencia', aux: 'Juan Pérez García', hi: '11:00', hf: '19:00', plantaClass: 'p4', auxColor: 'red', horaColor: 'red', thumb: '🖋️' },
+      { planta: 'AZ', sala: 'Terraza - Azotea', sub: 'Evento privado', aux: 'Diego Sánchez Morales', hi: '12:00', hf: '20:00', plantaClass: 'az', auxColor: 'blue', horaColor: 'blue', thumb: '🏖️' }
+    ];
+    function renderTable() {
+      const tbody = document.getElementById('servicesTable');
+      tbody.innerHTML = '';
+      services.forEach(service => {
+        const row = document.createElement('tr');
+        const initials = (service.aux.split(' ')[0][0] || '') + (service.aux.split(' ')[1][0] || '');
+        row.innerHTML = `
+          <td><span class="planta-tag planta-${service.plantaClass}">${service.planta}</span></td>
+          <td><div class="sala-cell"><div class="sala-thumb">${service.thumb}</div><div class="sala-info"><h4>${service.sala}</h4><p>${service.sub}</p></div></div></td>
+          <td><div class="auxiliar-cell"><div class="aux-avatar ${service.auxColor}">${initials}</div><div class="aux-name">${service.aux}</div></div></td>
+          <td><div class="hora ${service.horaColor}">${service.hi}</div></td>
+          <td><div class="hora ${service.horaColor}">${service.hf}</div></td>
+          <td><div class="estado"><div class="estado-dot"></div>EN CURSO</div></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+    function updateStats() {
+      document.getElementById('statServices').textContent = services.length;
+      document.getElementById('statAuxiliares').textContent = services.length;
+      const nextService = services.find(s => timeToMinutes(s.hi) > getCurrentMinutes());
+      if (nextService) {
+        document.getElementById('nextTime').textContent = nextService.hi;
+        document.getElementById('nextSala').textContent = `Próximo servicio comienza en ${nextService.sala}`;
+      }
+    }
+    function timeToMinutes(time) {
+      const [h, m] = time.split(':').map(Number);
+      return h * 60 + m;
+    }
+    function getCurrentMinutes() {
+      const now = new Date();
+      return now.getHours() * 60 + now.getMinutes();
+    }
+    function updateClock() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      document.getElementById('clockWidget').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      const months = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+      const dateStr = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+      document.getElementById('dateWidget').textContent = dateStr;
+    }
+    renderTable();
+    updateStats();
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
